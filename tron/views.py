@@ -7,7 +7,7 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from django.views.generic import View
 import json
-# from asgiref.sync import async_to_sync
+from asgiref.sync import async_to_sync
 
 
 from .commands.check_anomaly_hiding import check_anomaly_hiding
@@ -71,12 +71,13 @@ PARAMS = int(config('PARAMS'))
 @csrf_exempt
 @api_view(['GET'])
 @renderer_classes([JSONRenderer])
-async def start_research(request, address):
+def start_research(request, address):
     try:
 
-        # @async_to_sync
+        @async_to_sync
         async def inner():
             transactions = await get_transactions(address=address, api_key=api_key, params={ "limit" : PARAMS })
+            print("TRANSACTIONS RESPONSE:", transactions)
             
             transactions_info = await get_info(address=address, api_key=api_key)
             account_transactions = transactions_info['transactions_len']
@@ -89,7 +90,10 @@ async def start_research(request, address):
                 return HttpResponse(json_response, content_type='application/json; charset=utf-8', status=230)
             
             transactions_info = await get_first_last_transactions(address=address, api_key=api_key)
+            print("TRANSACTIONS INFO RESPONSE:", transactions_info)  # Debugging
+
             anomaly_relation = await check_relation(address=address, api_key=api_key_chainalysis)
+            print("ANOMALY RELATION RESPONSE:", anomaly_relation)  # Debugging
 
             if anomaly_relation['evaluation'] is True:
                 response_data = {'finalEvaluation': None, 'error': None, 'message': 'Этот адрес находится в санкционном списке'}
