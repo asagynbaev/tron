@@ -56,5 +56,5 @@ trx-utils==1.0.4
 typing_extensions==4.8.0
 tzdata==2023.3
 uritemplate==4.1.1
-urllib3==2.1.0
+urllib3==2.2.2
 uvicorn==0.24.0.post1
