@@ -7,7 +7,7 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from django.views.generic import View
 import json
-from asgiref.sync import async_to_sync
+# from asgiref.sync import async_to_sync
 
 
 from .commands.check_anomaly_hiding import check_anomaly_hiding
@@ -71,10 +71,10 @@ PARAMS = int(config('PARAMS'))
 @csrf_exempt
 @api_view(['GET'])
 @renderer_classes([JSONRenderer])
-def start_research(request, address):
+async def start_research(request, address):
     try:
 
-        @async_to_sync
+        # @async_to_sync
         async def inner():
             transactions = await get_transactions(address=address, api_key=api_key, params={ "limit" : PARAMS })
             
@@ -111,6 +111,7 @@ def start_research(request, address):
         return response
             
     except Exception as e:
-        response_data = {'finalEvaluation': None, 'error': e, 'message': None}
-        json_response = json.dumps(response_data, ensure_ascii=False)
-        return HttpResponse(json_response, content_type='application/json; charset=utf-8', status=500)
+            print(f"Error: {e}")  # or logging.error(f"Error: {e}")
+            response_data = {'finalEvaluation': None, 'error': str(e), 'message': None}
+            json_response = json.dumps(response_data, ensure_ascii=False)
+            return HttpResponse(json_response, content_type='application/json; charset=utf-8', status=500)
