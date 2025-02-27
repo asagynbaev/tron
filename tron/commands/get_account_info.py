@@ -1,35 +1,34 @@
 import httpx
-from datetime import datetime
+import asyncio
 
 async def get_info(address, api_key):
     url = f"https://apilist.tronscanapi.com/api/accountv2?address={address}"
-    
-    headers = {
-        'Content-Type': "application/json"
+    headers = {'Content-Type': "application/json"}
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, headers=headers)
+            response.raise_for_status()  # Проверяем, есть ли ошибка HTTP
+            json_data = response.json()
+    except httpx.RequestError as e:
+        print(f"Ошибка запроса: {e}")
+        return {"transactions_len": 0, "balance": 0, "redTag": ""}
+    except httpx.HTTPStatusError as e:
+        print(f"Ошибка HTTP: {e.response.status_code}")
+        return {"transactions_len": 0, "balance": 0, "redTag": ""}
+
+    # Подготовка безопасного словаря
+    data = {
+        "transactions_len": json_data.get("totalTransactionCount", 0),
+        "balance": 0,  # По умолчанию 0, если токена нет
+        "redTag": json_data.get("redTag", "")  # Пустая строка, если тега нет
     }
 
-    response = httpx.get(url, headers=headers)
-
-    data = {}
-
-    for k, v in response.json().items():
-        if k == 'totalTransactionCount':
-            data['transactions_len'] = v
-            
-        if k == 'withPriceTokens':
-            for dict in v:
-                if dict['tokenId'] == 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t':
-                    # data['transactions_len'] = dict['transferCount']
-                    data['balance'] = int(dict['balance']) / 1000000
-        
-        if k == 'redTag':
-            data['redTag'] = v
-    
-    if data['transactions_len'] == None:
-        data['transactions_len'] = 0
-    elif data['balance'] == None:
-        data['balance'] = 0
+    # Проверяем, есть ли ключ 'withPriceTokens' и содержит ли он список
+    if "withPriceTokens" in json_data and isinstance(json_data["withPriceTokens"], list):
+        for token in json_data["withPriceTokens"]:
+            # Проверяем, есть ли нужный токен 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'
+            if token.get("tokenId") == "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t":
+                data["balance"] = int(token.get("balance", 0)) / 1_000_000  # Безопасное извлечение
 
     return data
-
-
