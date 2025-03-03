@@ -40,6 +40,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     '127.0.0.1', 
+    '0.0.0.0',
+    'tron'
     'localhost', 
     '46.101.148.232',
     'trustex.kg', 

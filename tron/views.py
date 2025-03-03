@@ -78,6 +78,24 @@ def start_research(request, address):
         async def inner():
             transactions = await get_transactions(address=address, api_key=api_key, params={ "limit" : PARAMS })
             print("TRANSACTIONS RESPONSE:", transactions)
+
+            # Если транзакций нет, возвращаем шаблон с нулями
+            if not transactions:  
+                print("✅ Новый кошелек: нет транзакций, возвращаем стандартный ответ.")
+                response_data = {
+                    "finalEvaluation": {
+                        "finalEvaluation": 0.0,
+                        "transactions": 0,
+                        "blacklist": False,
+                        "balance": 0.0,
+                        "first_transaction": None,
+                        "last_transaction": None,
+                        "redTag": "Обычный"
+                    },
+                    "error": None,
+                    "message": "Новый адрес кошелька, транзакций нет"
+                }
+                return JsonResponse(response_data, status=200, json_dumps_params={'ensure_ascii': False})
             
             transactions_info = await get_info(address=address, api_key=api_key)
             account_transactions = transactions_info['transactions_len']
