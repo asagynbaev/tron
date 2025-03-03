@@ -79,6 +79,18 @@ def start_research(request, address):
             transactions = await get_transactions(address=address, api_key=api_key, params={ "limit" : PARAMS })
             print("TRANSACTIONS RESPONSE:", transactions)
 
+            # Проверяем, вернул ли API ошибку (адрес не существует)
+            if transactions is None or transactions == []:
+                print("❌ Адрес не найден в сети, транзакций нет.")
+                response_data = {
+                    "finalEvaluation": None,
+                    "error": None,
+                    "message": "Адрес не существует или не найден в сети."
+                }
+
+                json_response = json.dumps(response_data, ensure_ascii=False)
+                return HttpResponse(json_response, content_type='application/json; charset=utf-8', status=404)
+
             # Если транзакций нет, возвращаем шаблон с нулями
             if not transactions:  
                 print("✅ Новый кошелек: нет транзакций, возвращаем стандартный ответ.")
@@ -95,7 +107,9 @@ def start_research(request, address):
                     "error": None,
                     "message": "Новый адрес кошелька, транзакций нет"
                 }
-                return JsonResponse(response_data, status=200, json_dumps_params={'ensure_ascii': False})
+                print(response_data)  # Debugging
+                json_response = json.dumps(response_data, ensure_ascii=False)
+                return HttpResponse(json_response, content_type='application/json; charset=utf-8', status=200)
             
             transactions_info = await get_info(address=address, api_key=api_key)
             account_transactions = transactions_info['transactions_len']
