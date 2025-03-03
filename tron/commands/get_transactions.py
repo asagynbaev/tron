@@ -7,7 +7,7 @@ APPROXIMATE_MAX_TRANSACTIONS_AMOUNT = int(config('APPROXIMATE_MAX_TRANSACTIONS_A
 
 async def get_transactions(address, api_key, params={}):
     url = f"https://api.trongrid.io/v1/accounts/{address}/transactions/trc20"
-    
+
     headers = {
         'Content-Type': "application/json",
         'TRON-PRO-API-KEY': api_key
@@ -16,18 +16,22 @@ async def get_transactions(address, api_key, params={}):
     try:
         response = httpx.get(url, headers=headers, params=params)
 
+        # Обрабатываем ошибку 400 (адрес не существует)
         if response.status_code == 400:
-            print(f"Ошибка 400: Неверный запрос к API. Адрес: {address}")
-            return None  # Вернем `None`, чтобы обработать в `inner()`
-        elif response.status_code != 200:
-            print(f"Ошибка API: {response.status_code} - {response.text}")
-            return None
+            print(f"❌ Ошибка 400: Неверный адрес {address}, он не существует.")
+            return "INVALID_ADDRESS"  # Вернем строку, чтобы отличить ошибку
+
+        # Обрабатываем другие ошибки API
+        if response.status_code != 200:
+            print(f"❌ Ошибка API: {response.status_code} - {response.text}")
+            return None  # Ошибка сервера, просто `None`
 
         response_json = response.json()
 
+        # Если у кошелька нет транзакций, он новый
         if 'data' not in response_json or not response_json['data']:
-            print(f"Кошелек {address} новый или без транзакций.")
-            return []  # Вернем пустой список, если данных нет
+            print(f"✅ Новый кошелек {address}, транзакций нет.")
+            return []  # Пустой список = новый кошелек
 
         data = []
 
@@ -68,5 +72,5 @@ async def get_transactions(address, api_key, params={}):
         return data
 
     except Exception as e:
-        print(f"Исключение при запросе транзакций: {e}")
-        return None  # В случае ошибки вернем `None`
+        print(f"⚠️ Исключение при запросе транзакций: {e}")
+        return None  # Ошибка сервера, обработаем отдельно
