@@ -16,19 +16,17 @@ async def get_transactions(address, api_key, params={}):
     try:
         response = httpx.get(url, headers=headers, params=params)
 
-        # **🚀 Проверяем код ответа перед вызовом `.json()`**
         if response.status_code == 400:
-            print(f"❌ Ошибка 400: Неверный запрос к API. Адрес: {address}")
+            print(f"Ошибка 400: Неверный запрос к API. Адрес: {address}")
             return None  # Вернем `None`, чтобы обработать в `inner()`
         elif response.status_code != 200:
-            print(f"❌ Ошибка API: {response.status_code} - {response.text}")
+            print(f"Ошибка API: {response.status_code} - {response.text}")
             return None
 
         response_json = response.json()
 
-        # **🚀 Проверяем, есть ли 'data' в JSON**
         if 'data' not in response_json or not response_json['data']:
-            print(f"✅ Кошелек {address} новый или без транзакций.")
+            print(f"Кошелек {address} новый или без транзакций.")
             return []  # Вернем пустой список, если данных нет
 
         data = []
@@ -48,7 +46,6 @@ async def get_transactions(address, api_key, params={}):
 
         format_transactions(response_json['data'])
 
-        # **🚀 Цикл для пагинации (если есть fingerprint)**
         while len(data) < APPROXIMATE_MAX_TRANSACTIONS_AMOUNT:
             fingerprint = response_json.get('meta', {}).get('fingerprint')
             if not fingerprint:
@@ -57,9 +54,8 @@ async def get_transactions(address, api_key, params={}):
             params['fingerprint'] = fingerprint
             response = httpx.get(url, headers=headers, params=params)
 
-            # **🚀 Проверяем статус перед `json()`**
             if response.status_code != 200:
-                print(f"❌ Ошибка при пагинации: {response.status_code} - {response.text}")
+                print(f"Ошибка при пагинации: {response.status_code} - {response.text}")
                 break
 
             response_json = response.json()
@@ -72,5 +68,5 @@ async def get_transactions(address, api_key, params={}):
         return data
 
     except Exception as e:
-        print(f"❌ Исключение при запросе транзакций: {e}")
+        print(f"Исключение при запросе транзакций: {e}")
         return None  # В случае ошибки вернем `None`

@@ -83,9 +83,9 @@ def start_research(request, address):
             if transactions is None or transactions == []:
                 print("❌ Адрес не найден в сети, транзакций нет.")
                 response_data = {
-                    "finalEvaluation": None,
-                    "error": None,
-                    "message": "Адрес не существует или не найден в сети."
+                    'finalEvaluation': None,
+                    'error': None,
+                    'message': 'Адрес не существует или не найден в сети.'
                 }
 
                 json_response = json.dumps(response_data, ensure_ascii=False)
