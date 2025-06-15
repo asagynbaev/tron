@@ -19,7 +19,7 @@ def get_finalEvaluation(anomaly_value, anomaly_transfers, anomaly_hiding, anomal
         redTag = 'Небезопасный'
 
     finalEvaluation = {
-        'finalEvaluation': round(anomalies_general/coefficient_general, 2),
+        'finalScore': round(anomalies_general/coefficient_general, 2),
         'transactions': transactions_len,
         'blacklist': anomaly_relation_evaluation,
         'balance': balance,
