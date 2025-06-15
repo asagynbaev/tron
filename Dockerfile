@@ -24,3 +24,5 @@ EXPOSE 8000
 
 # Start the app with Gunicorn
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "core.wsgi:application"]
+
+# docker buildx build --platform linux/amd64 -t tron:latest .
